@@ -1,0 +1,5 @@
+langchain
+fastapi
+uvicorn
+yt_dlp
+pydantic
