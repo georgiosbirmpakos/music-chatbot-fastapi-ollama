@@ -64,5 +64,8 @@ __cache__/
 # IDEs
 .idea/
 
-# Output folders
+# Ignore all .wav audio files
+*.wav
+
+# Ignore the downloads folder and its contents
 downloads/
