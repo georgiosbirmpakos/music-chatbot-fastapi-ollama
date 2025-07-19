@@ -49,7 +49,7 @@ pip install -r requirements.txt
 pip install langchain-ollama
 
 # 2. Start Ollama (make sure gemma is downloaded)
-ollama run gemma:4b
+ollama run gemma3:4b
 
 # 3. Run FastAPI
 uvicorn main:app --reload
