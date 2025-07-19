@@ -1,6 +1,5 @@
-# app/core/app_builder.py
 from fastapi import FastAPI
-from app.api.routes import router
+from app.api.router import router
 
 def create_app() -> FastAPI:
     app = FastAPI(title="🎵 Music Chatbot")

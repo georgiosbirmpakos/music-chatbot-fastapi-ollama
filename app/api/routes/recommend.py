@@ -10,7 +10,7 @@ router = APIRouter()
 class MoodRequest(BaseModel):
     text: str
 
-# Instantiate dependencies
+# Instantiate and share these if needed
 chain = MoodToSongsChain()
 downloader = YouTubeDownloader()
 service = MusicService(chain, downloader)

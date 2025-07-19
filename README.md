@@ -1,63 +1,130 @@
-# 🎵 Mood-Based Music Recommendation Chatbot (LangChain + Ollama + FastAPI)
 
-This project is an intelligent music chatbot that asks how you're feeling and automatically recommends 10 songs that match your mood using a local LLM (**Gemma via Ollama**). With a single click, it also downloads the suggested songs from YouTube as `.wav` files.
+# 🎵 Music Chatbot
 
-## ✨ Features
+An AI-powered conversational music assistant that suggests songs based on your mood and downloads them as `.wav` files using YouTube.
 
-- 🤖 LLM-powered mood understanding using **Gemma 3B/4B** (via Ollama)
-- 🎶 Prompt-based song recommendations with LangChain
-- 📥 Automatic song downloading using `yt_dlp`
-- 🚀 Built with FastAPI and ready for integration with a frontend
-- 📂 Clean modular structure for chains, tools, and prompts
-- 🔍 Interactive testing via Swagger (`/docs`)
+---
 
-## 📦 Tech Stack
+## 🧠 Chat with the Bot & Download Songs
 
-- **LangChain** (modern Runnable interface)
-- **LangChain-Ollama** for local LLM calls
-- **Ollama** to run Gemma models locally
-- **FastAPI** backend
-- **yt_dlp** for high-quality audio download
-- **Python 3.10+**
+You can interact with the chatbot via `/chat` and receive 10 song suggestions based on your prompt. Once you're happy with the list, simply confirm and the songs will be downloaded automatically.
 
-## 📁 Folder Structure
+---
 
-```
-music_chatbot/
-├── main.py                    # FastAPI app
-├── chains/
-│   └── mood_to_songs_chain.py
-├── tools/
-│   └── download_tool.py
-├── prompts/
-│   └── suggest_songs.txt
-├── downloads/                # Output folder
-└── requirements.txt
-```
+### 1. 🎤 Start a Chat
 
-## 🚀 How It Works
+Send a POST request to `/chat`:
 
-1. You send a mood like `"nostalgic"` to the `/mood-to-download` endpoint.
-2. The chatbot uses **Gemma** to suggest 10 songs that match your mood.
-3. The songs are automatically downloaded from YouTube as `.wav` files.
+```http
+POST /chat
+Content-Type: application/json
 
-## 🛠️ Getting Started
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-pip install langchain-ollama
-
-# 2. Start Ollama (make sure gemma is downloaded)
-ollama run gemma3:4b
-
-# 3. Run FastAPI
-uvicorn main:app --reload
-
-# 4. Visit Swagger UI
-http://localhost:8000/docs
+{
+  "message": "I feel nostalgic",
+  "session_id": "anna"
+}
 ```
 
 ---
 
-Enjoy your personalized music experience! 🎧
+### 2. 🧾 Adjust Recommendations (Optional)
+
+Refine your playlist by chatting:
+
+```json
+{
+  "message": "Add some classic rock",
+  "session_id": "anna"
+}
+```
+
+---
+
+### 3. ✅ Confirm to Download
+
+Once ready, trigger the download:
+
+```json
+{
+  "message": "Yes, download them",
+  "session_id": "anna"
+}
+```
+
+Response:
+```json
+{
+  "reply": "Great! I've started downloading your list. Saved to: downloads/"
+}
+```
+
+---
+
+## 🧑‍💻 Developer Setup Guide
+
+### ✅ Prerequisites
+
+- Python 3.10+
+- FFmpeg (for audio conversion)
+- Git
+- Conda or `venv` (optional, recommended)
+
+---
+
+### 🔧 Installation
+
+```bash
+git clone https://github.com/georgiosbirmpakos/music-chatbot-fastapi-ollama.git
+cd music_chatbot
+pip install -r requirements.txt
+```
+
+Ensure `ffmpeg` is installed and in your PATH.
+
+---
+
+### 🚀 Run the Server
+
+```bash
+uvicorn main:app --reload
+```
+
+Open Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+### 🧠 Models & Memory
+
+- Uses `LangChain` and `Ollama` (e.g., `gemma3:4b`) for chat
+- Tracks user context using `InMemoryChatMessageHistory`
+- Prompts loaded from `prompts/suggest_songs.txt`
+
+---
+
+### 📦 Folder Structure
+
+```
+.
+├── app
+│   ├── api              # FastAPI route definitions
+│   ├── core             # Session memory handling
+│   └── services         # Downloader logic
+├── chains               # LangChain logic & orchestration
+├── prompts              # Initial prompt template
+├── downloads            # Where .wav files are saved
+├── main.py              # FastAPI app entrypoint
+├── requirements.txt
+└── README.md
+```
+
+---
+
+### 🔩 Extend the Bot
+
+- To add new tools (e.g., genre filtering), extend `chains/conversational_recommender.py`
+- To support other formats (.mp3), modify `tools/youtube_downloader.py`
+- To persist memory across sessions, replace `InMemoryChatMessageHistory` with Redis or another store
+
+---
+
+
