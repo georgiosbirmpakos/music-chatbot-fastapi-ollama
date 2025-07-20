@@ -1,23 +1,38 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
+  const location = useLocation();
+
+  const navItems = [
+    { path: '/', label: 'Chat' },
+    { path: '/guide', label: 'Guide' },
+    { path: '/about', label: 'About' },
+  ];
+
   return (
-    <nav className="bg-black text-white flex items-center justify-between px-6 py-4 shadow-md">
-      <div className="text-xl font-bold flex items-center gap-2">
-        <span role="img" aria-label="music">🎵</span> Music Chatbot
+    <nav className="bg-neutral-950 text-white shadow-md">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-wide text-green-400">
+          🎵 Music ChatBot
+        </h1>
+        <ul className="flex space-x-6 text-lg sm:text-xl font-medium">
+          {navItems.map((item) => (
+            <li key={item.path}>
+              <Link
+                to={item.path}
+                className={`transition duration-300 ${
+                  location.pathname === item.path
+                    ? 'text-green-400 underline underline-offset-4'
+                    : 'text-gray-300 hover:text-green-400'
+                }`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
-      <ul className="flex space-x-6 text-sm font-medium">
-        <li>
-          <Link to="/" className="hover:text-green-500 transition">User Guide</Link>
-        </li>
-        <li>
-          <Link to="/chatbot" className="hover:text-green-500 transition">Chatbot</Link>
-        </li>
-        <li>
-          <Link to="/about" className="hover:text-green-500 transition">About</Link>
-        </li>
-      </ul>
     </nav>
   );
 };
