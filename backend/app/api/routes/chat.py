@@ -11,7 +11,8 @@ class ChatMessage(BaseModel):
 chatbot = ConversationalRecommender()
 
 @router.post("/chat")
-def chat_with_bot(msg: ChatMessage, session_id: str = "default"):
+def chat_with_bot(msg: ChatMessage):
+    session_id = msg.session_id
     response = chatbot.ask(msg.message, session_id=session_id)
 
     if "download" in msg.message.lower() or "yes" in msg.message.lower():
@@ -19,5 +20,6 @@ def chat_with_bot(msg: ChatMessage, session_id: str = "default"):
         return {"reply": response, "downloads": files}
 
     return {"reply": response}
+
 
 

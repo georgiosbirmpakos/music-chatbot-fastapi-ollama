@@ -69,3 +69,31 @@ __cache__/
 
 # Ignore the downloads folder and its contents
 downloads/
+
+# Node.js (Vite, React, Tailwind)
+node_modules/
+.pnp/
+.pnp.js
+.vite/
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# React/Vite environment variables
+.env.development
+.env.production
+.env.local
+.env.*.local
+
+# Frontend coverage/testing
+coverage/
+
