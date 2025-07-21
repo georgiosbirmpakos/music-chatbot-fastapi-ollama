@@ -3,6 +3,8 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from app.services.downloader import download_song_list
 from app.core.memory_store import get_memory
+from app.core.config import DEFAULT_MODEL_NAME
+
 
 # Load dynamic system prompt
 with open("prompts/suggest_songs.txt", "r", encoding="utf-8") as f:
@@ -16,7 +18,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 class ConversationalRecommender:
-    def __init__(self, model_name: str = "gemma3:4b"):
+    def __init__(self, model_name: str = DEFAULT_MODEL_NAME):
         self.llm = ChatOllama(model=model_name)
         self.chain = RunnableWithMessageHistory(
             prompt | self.llm,
