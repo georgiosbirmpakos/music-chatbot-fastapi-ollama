@@ -5,7 +5,7 @@ const Navbar = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Chat' },
+    { path: '/chatbot', label: 'Chat' },
     { path: '/guide', label: 'Guide' },
     { path: '/about', label: 'About' },
   ];

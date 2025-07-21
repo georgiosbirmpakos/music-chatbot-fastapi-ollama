@@ -1,6 +1,8 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ChatPage from './pages/ChatPage';
+import GuidePage from './pages/GuidePage';
+import AboutPage from './pages/AboutPage';
 
 function App() {
   return (
@@ -9,9 +11,10 @@ function App() {
         <Navbar />
         <div className="p-6">
           <Routes>
-            <Route path="/" element={<div>User Guide</div>} />
+            <Route path="/" element={<Navigate to="/chatbot" />} />
             <Route path="/chatbot" element={<ChatPage />} />
-            <Route path="/about" element={<div>About this app</div>} />
+            <Route path="/guide" element={<GuidePage />} />
+            <Route path="/about" element={<AboutPage/>} />
           </Routes>
         </div>
       </div>
