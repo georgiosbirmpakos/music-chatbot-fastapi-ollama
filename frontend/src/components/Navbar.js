@@ -1,10 +1,10 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const location = useLocation();
 
   const navItems = [
+    { path: '/ragchatbot', label: 'RagChat' },
     { path: '/chatbot', label: 'Chat' },
     { path: '/guide', label: 'Guide' },
     { path: '/about', label: 'About' },
