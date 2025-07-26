@@ -1,11 +1,10 @@
-# tools/download_tool.py
-
 import os
 import yt_dlp
+from pathlib import Path
 
 class YouTubeDownloader:
-    def __init__(self, output_dir: str = "downloads"):
-        self.output_dir = output_dir
+    def __init__(self, output_dir: str = None):
+        self.output_dir = output_dir or str(Path.home() / "Downloads")
         os.makedirs(self.output_dir, exist_ok=True)
 
     def download(self, song_title: str) -> str:
