@@ -16,19 +16,14 @@ const RagChatPage = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/chat-conversational-rag", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: input,
-          session_id: "george",
-        }),
+      const res = await fetch('http://localhost:8000/chat-conversational-rag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input, session_id: 'george' }),
       });
 
       const data = await res.json();
-      const reply = data.reply || "🤖 Sorry, something went wrong.";
+      const reply = data.reply || '🤖 Sorry, something went wrong.';
       setMessages([...newMessages, { type: 'bot', text: reply }]);
     } catch (err) {
       setMessages([...newMessages, { type: 'bot', text: 'Error reaching server ❌' }]);
@@ -47,13 +42,13 @@ const RagChatPage = () => {
   }, [messages, loading]);
 
   return (
-    <div className="flex flex-col h-screen bg-neutral-950 text-white font-poppins text-lg">
-      {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+    <div className="flex flex-col bg-neutral-950 text-white font-poppins text-base">
+      {/* Chat messages container (no forced flex-1, limited height) */}
+      <div className="overflow-y-auto px-4 py-2 space-y-1 max-h-[75vh]">
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`max-w-3xl mx-auto p-4 rounded-2xl whitespace-pre-wrap ${
+            className={`max-w-3xl mx-auto p-3 rounded-2xl whitespace-pre-wrap ${
               msg.type === 'user'
                 ? 'bg-green-600 text-white ml-auto'
                 : 'bg-neutral-800 text-gray-100 mr-auto'
@@ -63,7 +58,7 @@ const RagChatPage = () => {
           </div>
         ))}
         {loading && (
-          <div className="max-w-3xl mx-auto p-4 rounded-2xl bg-neutral-800 text-gray-300 animate-pulse">
+          <div className="max-w-3xl mx-auto p-3 rounded-2xl bg-neutral-800 text-gray-300 animate-pulse">
             🤖 Typing...
           </div>
         )}
@@ -71,11 +66,11 @@ const RagChatPage = () => {
       </div>
 
       {/* Input area */}
-      <div className="bg-neutral-900 px-4 py-4 border-t border-neutral-800">
-        <div className="flex max-w-3xl mx-auto gap-2">
+      <div className="bg-neutral-900 px-4 py-2 border-t border-neutral-800">
+        <div className="flex max-w-3xl mx-auto gap-1">
           <input
             type="text"
-            className="flex-1 p-3 rounded-xl bg-neutral-800 text-white text-lg focus:outline-none"
+            className="flex-1 p-2 rounded-xl bg-neutral-800 text-white text-base focus:outline-none"
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -84,7 +79,7 @@ const RagChatPage = () => {
           />
           <button
             onClick={handleSend}
-            className={`px-5 py-3 rounded-xl font-semibold ${
+            className={`px-4 py-2 rounded-xl font-semibold ${
               loading
                 ? 'bg-gray-600 cursor-not-allowed'
                 : 'bg-green-500 hover:bg-green-600 text-white'
