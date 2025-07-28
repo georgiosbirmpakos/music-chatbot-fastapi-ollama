@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from chains.conversational_rag_recommender import ConversationalRagRecommender
+from chains.music_rag_chain import rag_chain
 
 router = APIRouter()
-chatbot = ConversationalRagRecommender()
+chatbot = ConversationalRagRecommender(rag_chain)
 
 class ChatMessage(BaseModel):
     message: str
@@ -16,3 +17,5 @@ def chat_with_rag(msg: ChatMessage):
     """
     reply = chatbot.ask(msg.message, session_id=msg.session_id)
     return {"reply": reply}
+
+

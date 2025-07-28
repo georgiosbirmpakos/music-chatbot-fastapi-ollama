@@ -9,9 +9,10 @@ echo "🔹 Activating conda environment: music-chatbot"
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate music-chatbot
 
-# 2. Start Ollama (Mistral 7B)
-echo "🔹 Starting Ollama with mistral:7b"
-ollama run mistral:7b &
+# 2. Start Ollama
+echo "🔹 Starting Ollama"
+# ollama run mistral:7b &
+ollama run tinyllama:1.1b &
 OLLAMA_PID=$!
 sleep 5  # give it some time to warm up
 
