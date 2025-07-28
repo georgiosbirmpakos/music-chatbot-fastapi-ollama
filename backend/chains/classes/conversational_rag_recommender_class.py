@@ -6,6 +6,9 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from app.core.memory_store import get_memory
 from app.services.downloader import download_song_list
 from app.core.config import DEFAULT_MODEL_NAME
+from app.services.playlist_operations import execute_playlist_operations
+import os
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -95,32 +98,34 @@ Extract and return strict JSON:
                 except ValueError:
                     continue
         return structured
+    
+    
 
-    def modify_playlist(self, session_id: str, constraints: dict) -> list:
-        playlist = self.session_playlists.get(session_id, [])
-        filtered = [
-            s for s in playlist
-            if s["artist"] not in constraints["exclude_artists"]
-            and s["decade"] not in constraints["exclude_decades"]
-            and s["genre"] not in constraints["exclude_genres"]
-            and s["mood"] not in constraints["exclude_moods"]
-        ]
-        needed = max(0, 10 - len(filtered))
-        if needed > 0:
-            query_parts = []
-            if constraints["exclude_artists"]:
-                query_parts.append("excluding artists: " + ", ".join(constraints["exclude_artists"]))
-            if constraints["exclude_decades"]:
-                query_parts.append("excluding decades: " + ", ".join(constraints["exclude_decades"]))
-            if constraints["exclude_genres"]:
-                query_parts.append("excluding genres: " + ", ".join(constraints["exclude_genres"]))
-            if constraints["exclude_moods"]:
-                query_parts.append("excluding moods: " + ", ".join(constraints["exclude_moods"]))
-            query = "motivational songs " + " ".join(query_parts)
-            new_songs = self.convert_rag_to_struct(self.rag_chain.recommend_songs(query, top_k=needed))
-            filtered.extend(new_songs)
-        self.session_playlists[session_id] = filtered
-        return filtered
+    # def modify_playlist(self, session_id: str, constraints: dict) -> list:
+    #     playlist = self.session_playlists.get(session_id, [])
+    #     filtered = [
+    #         s for s in playlist
+    #         if s["artist"] not in constraints["exclude_artists"]
+    #         and s["decade"] not in constraints["exclude_decades"]
+    #         and s["genre"] not in constraints["exclude_genres"]
+    #         and s["mood"] not in constraints["exclude_moods"]
+    #     ]
+    #     needed = max(0, 10 - len(filtered))
+    #     if needed > 0:
+    #         query_parts = []
+    #         if constraints["exclude_artists"]:
+    #             query_parts.append("excluding artists: " + ", ".join(constraints["exclude_artists"]))
+    #         if constraints["exclude_decades"]:
+    #             query_parts.append("excluding decades: " + ", ".join(constraints["exclude_decades"]))
+    #         if constraints["exclude_genres"]:
+    #             query_parts.append("excluding genres: " + ", ".join(constraints["exclude_genres"]))
+    #         if constraints["exclude_moods"]:
+    #             query_parts.append("excluding moods: " + ", ".join(constraints["exclude_moods"]))
+    #         query = "motivational songs " + " ".join(query_parts)
+    #         new_songs = self.convert_rag_to_struct(self.rag_chain.recommend_songs(query, top_k=needed))
+    #         filtered.extend(new_songs)
+    #     self.session_playlists[session_id] = filtered
+    #     return filtered
 
     def format_playlist(self, playlist: list) -> str:
         return "\n".join(f"{i+1}. {s['artist']} – {s['title']} ({s['decade']})" for i, s in enumerate(playlist))
@@ -133,11 +138,23 @@ Extract and return strict JSON:
             self.session_playlists[session_id] = playlist
             self.song_memory[session_id] = [f"{s['artist']} – {s['title']}" for s in playlist]
             return self.format_playlist(playlist)
+        # if intent == "modify_playlist":
+        #     if session_id not in self.session_playlists:
+        #         return "⚠️ No playlist to modify yet."
+        #     constraints = self.extract_constraints(user_message, self.session_playlists[session_id])
+        #     updated_playlist = self.modify_playlist(session_id, constraints)
+        #     self.song_memory[session_id] = [f"{s['artist']} – {s['title']}" for s in updated_playlist]
+        #     return self.format_playlist(updated_playlist)
         if intent == "modify_playlist":
             if session_id not in self.session_playlists:
                 return "⚠️ No playlist to modify yet."
-            constraints = self.extract_constraints(user_message, self.session_playlists[session_id])
-            updated_playlist = self.modify_playlist(session_id, constraints)
+            operations = self.extract_operations(user_message, session_id=session_id)
+            updated_playlist = execute_playlist_operations(
+                self.session_playlists[session_id],
+                operations,
+                self.rag_chain
+            )
+            self.session_playlists[session_id] = updated_playlist
             self.song_memory[session_id] = [f"{s['artist']} – {s['title']}" for s in updated_playlist]
             return self.format_playlist(updated_playlist)
         if intent == "download":
@@ -149,3 +166,26 @@ Extract and return strict JSON:
         # fallback to generic chat
         response = self.rag_chain.chat(user_message)
         return response if isinstance(response, str) else self._extract_content(response)
+    
+    def extract_operations(self, message: str, session_id: str = "default") -> dict:
+        # Load playlist operation prompt
+        with open(os.path.join("prompts", "playlist_operations_prompt.txt"), "r", encoding="utf-8") as f:
+            operations_prompt = f.read()
+
+        playlist_len = len(self.session_playlists.get(session_id, []))
+        full_prompt = (
+            f"{operations_prompt}\n\n"
+            f"Current playlist length: {playlist_len}\n"
+            f"User instruction:\n{message}\n"
+            "Output only JSON."
+        )
+
+        response = self.llm.invoke(full_prompt)
+        raw_output = response.content if hasattr(response, "content") else str(response)
+
+        try:
+            return json.loads(raw_output)
+        except json.JSONDecodeError:
+            return {"operations": []}
+
+
