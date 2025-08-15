@@ -1,130 +1,103 @@
+# Music Agent Chatbot
 
-# 🎵 Music Chatbot
-
-An AI-powered conversational music assistant that suggests songs based on your mood and downloads them as `.wav` files using YouTube.
-
----
-
-## 🧠 Chat with the Bot & Download Songs
-
-You can interact with the chatbot via `/chat` and receive 10 song suggestions based on your prompt. Once you're happy with the list, simply confirm and the songs will be downloaded automatically.
+## Overview
+This project is a mood-based **music recommendation chatbot** that suggests songs, modifies playlists via natural language, and downloads tracks from YouTube. It integrates a React frontend with a FastAPI backend powered by LangChain, Ollama, and FAISS.
 
 ---
 
-### 1. 🎤 Start a Chat
+## Features
+- **Chat-based interaction** for music discovery.
+- **Mood-based song recommendations** using a curated dataset.
+- **Playlist modification** (add, remove, replace, reorder) via natural language.
+- **YouTube audio download** as MP3 with metadata tagging.
+- **Session-based conversation memory** for personalized recommendations.
 
-Send a POST request to `/chat`:
+---
 
-```http
-POST /chat
-Content-Type: application/json
+## Architecture
+**Frontend**: React + Tailwind CSS  
+**Backend**: FastAPI + LangChain + HuggingFace + FAISS  
+**LLM Runtime**: Ollama (`mistral:7b` by default)  
+**Downloader**: yt_dlp + FFmpeg  
+**Data Storage**: JSON datasets for curated songs (mood, genre, decade)
 
-{
-  "message": "I feel nostalgic",
-  "session_id": "anna"
-}
+### Flow
+1. User sends message from frontend → Backend `/chat-conversational-rag`.
+2. Backend detects intent: recommend / modify playlist / download / other.
+3. Recommendations: Query FAISS (MiniLM embeddings) → LLM → return results.
+4. Playlist ops: Apply structured modifications to in-memory playlist.
+5. Download: Fetch MP3 via `yt_dlp` and save to `~/Downloads`.
+
+---
+
+## Folder Structure
+```
+backend/
+  main.py
+  app/
+    core/
+    api/
+    services/
+  chains/
+  datasets/
+  prompts/
+  tools/
+frontend/
+  src/
+  public/
+start_infra.sh
+requirements.txt
 ```
 
 ---
 
-### 2. 🧾 Adjust Recommendations (Optional)
-
-Refine your playlist by chatting:
-
-```json
-{
-  "message": "Add some classic rock",
-  "session_id": "anna"
-}
-```
+## Key Technologies
+- **FastAPI** – REST API framework for backend
+- **LangChain** – Orchestrates LLM-based RAG
+- **Ollama** – Local LLM runtime
+- **FAISS** – In-memory vector search
+- **HuggingFace Transformers** – Sentence embeddings (`all-MiniLM-L6-v2`)
+- **yt_dlp** – YouTube download
+- **React + Tailwind CSS** – Frontend UI
 
 ---
 
-### 3. ✅ Confirm to Download
+## Installation
 
-Once ready, trigger the download:
-
-```json
-{
-  "message": "Yes, download them",
-  "session_id": "anna"
-}
-```
-
-Response:
-```json
-{
-  "reply": "Great! I've started downloading your list. Saved to: downloads/"
-}
-```
-
----
-
-## 🧑‍💻 Developer Setup Guide
-
-### ✅ Prerequisites
-
+### Prerequisites
 - Python 3.10+
-- FFmpeg (for audio conversion)
-- Git
-- Conda or `venv` (optional, recommended)
+- Node.js 18+
+- Ollama installed locally (`https://ollama.ai`)
+- FFmpeg installed for audio processing
 
----
-
-### 🔧 Installation
-
+### Backend
 ```bash
-git clone https://github.com/georgiosbirmpakos/music-chatbot-fastapi-ollama.git
-cd music_chatbot
+cd backend
 pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Ensure `ffmpeg` is installed and in your PATH.
-
----
-
-### 🚀 Run the Server
-
+### Frontend
 ```bash
-uvicorn main:app --reload
-```
-
-Open Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-### 🧠 Models & Memory
-
-- Uses `LangChain` and `Ollama` (e.g., `gemma3:4b`) for chat
-- Tracks user context using `InMemoryChatMessageHistory`
-- Prompts loaded from `prompts/suggest_songs.txt`
-
----
-
-### 📦 Folder Structure
-
-```
-.
-├── app
-│   ├── api              # FastAPI route definitions
-│   ├── core             # Session memory handling
-│   └── services         # Downloader logic
-├── chains               # LangChain logic & orchestration
-├── prompts              # Initial prompt template
-├── downloads            # Where .wav files are saved
-├── main.py              # FastAPI app entrypoint
-├── requirements.txt
-└── README.md
+cd frontend
+npm install
+npm start
 ```
 
 ---
 
-### 🔩 Extend the Bot
-
-- To add new tools (e.g., genre filtering), extend `chains/conversational_recommender.py`
-- To support other formats (.mp3), modify `tools/youtube_downloader.py`
-- To persist memory across sessions, replace `InMemoryChatMessageHistory` with Redis or another store
+## Running with Script
+You can use `start_infra.sh` to start Ollama, backend, and frontend in sequence.  
+Make sure to adjust the model in `start_infra.sh` to your preference (`mistral:7b`, `tinyllama:1.1b`, etc.).
 
 ---
 
+## Example API Request
+```json
+POST /chat-conversational-rag
+{
+  "message": "I'm feeling happy today, suggest some songs",
+  "session_id": "user123"
+}
+```
 
