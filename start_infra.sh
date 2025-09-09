@@ -1,44 +1,44 @@
 #!/bin/bash
+set -euo pipefail
 
-set -e
+# always run from repo root
+cd "$(dirname "$0")"
 
-echo "🚀 Starting Music Chatbot Infrastructure..."
-
-# 1. Activate conda environment
-echo "🔹 Activating conda environment: music-chatbot"
-source "$(conda info --base)/etc/profile.d/conda.sh"
+echo "🔹 Activating conda env: music-chatbot"
+# try common conda.sh locations
+if [ -f "$(conda info --base 2>/dev/null)/etc/profile.d/conda.sh" ]; then
+  source "$(conda info --base)/etc/profile.d/conda.sh"
+elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+  source "$HOME/miniconda3/etc/profile.d/conda.sh"
+elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
+  source "$HOME/anaconda3/etc/profile.d/conda.sh"
+else
+  echo "❌ conda.sh not found"; exit 1
+fi
 conda activate music-chatbot
 
-# 2. Start Ollama
-echo "🔹 Starting Ollama"
-# ollama run mistral:7b &
-ollama run tinyllama:1.1b &
-OLLAMA_PID=$!
-sleep 5  # give it some time to warm up
+trap 'echo "🧹 Stopping..."; kill 0 || true' EXIT
 
-# 3. Start Backend
 echo "🔹 Starting FastAPI backend"
 cd backend
-uvicorn main:app --reload &
+# --reload can misbehave on Windows background; start stable first
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 & 
 BACKEND_PID=$!
 cd ..
 
-# 4. Wait until backend is ready
-echo "⏳ Waiting for backend to be ready..."
-until curl --output /dev/null --silent --head --fail http://localhost:8000/docs; do
-    printf '.'
-    sleep 10
+echo "⏳ Waiting for backend..."
+# hit a simple JSON endpoint with GET
+until curl -fsS http://127.0.0.1:8000/diag/health >/dev/null; do
+  printf '.'
+  sleep 20
 done
 echo -e "\n✅ Backend is up!"
 
-# 5. Start Frontend
 echo "🔹 Starting React frontend"
 cd frontend
 npm start &
 FRONTEND_PID=$!
-cd ..
+cd -
 
-# Handle shutdown cleanly
-trap "echo 'Shutting down...'; kill $OLLAMA_PID $BACKEND_PID $FRONTEND_PID" EXIT
-
+echo "💤 PIDs: backend=$BACKEND_PID frontend=$FRONTEND_PID (Ctrl+C to stop)"
 wait

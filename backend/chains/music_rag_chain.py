@@ -17,4 +17,7 @@ def load_all_music_datasets(dataset_folder: str):
 
 DATASET_FOLDER = os.path.join("datasets")
 music_data = load_all_music_datasets(DATASET_FOLDER)
-rag_chain = MusicRAGChain(music_data, model_name=DEFAULT_MODEL_NAME)
+rag_chain = MusicRAGChain(
+    music_data,
+    embedding_model_name="sentence-transformers/all-mpnet-base-v2"
+)
