@@ -6,7 +6,6 @@ from backend.classes import MusicBrainzClient
 from backend.helpers import get_mb_client 
 from contextlib import asynccontextmanager
 from openai import OpenAI
-from pydantic import BaseModel, ConfigDict
 import os, uuid
 from pydantic import BaseModel, ConfigDict
 from backend.state.memory import LatestListStore
@@ -22,6 +21,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="MusicBrainz Wrapper API", version="0.1.0", lifespan=lifespan)
+
+app.state.latest_store = LatestListStore(cap=10) 
 
 # Simple CORS for local dev; tighten for prod
 app.add_middleware(
